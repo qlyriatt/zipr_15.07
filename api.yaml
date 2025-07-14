@@ -1,0 +1,93 @@
+openapi: 3.0.0
+info:
+  title: zipR
+  version: 0.0.1
+  description: API with task, links, and status endpoints
+paths:
+  /task:
+    get:
+      summary: Create a task
+      description: Create a task returning its ID
+      responses:
+        '200':
+          description: Task created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  status:
+                    type: string
+                    enum:
+                      - created
+        '503':
+          description: Server busy
+  /links:
+    post:
+      summary: Add links to task
+      description: Add links to task returning current task status
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                links:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Successfully added links
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - pending
+                      - processing
+        '404':
+          description: Wrong ID
+        '400':
+          description: Wrong request or excessive links
+
+  /status:
+    get:
+      summary: Get task status
+      description: Get task status. If the task is completed, get a link to archive. If completed partially also get a log explaining why.
+      parameters:
+        - name: id
+          in: query
+          description: Task ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - completed
+                      - partially completed
+                      - error
+                  link:
+                    type: string
+                  log:
+                    type: string
+                    nullable: true
+        '404':
+          description: Task with ID not found
